@@ -23,7 +23,13 @@ app.use(bodyParser.json());
 
 app.get('/',async(req, res, next)=>{
 
-    const db = getDb(db_a);
+    let db_name = db_a;
+
+    if( JSON.stringify(req.query).includes('2') ){
+        db_name = db_b;
+    }
+
+    const db = getDb(db_name);
 
     // returns the first 25, unless noted to be different 
     content = await db.find({
