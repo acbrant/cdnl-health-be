@@ -1,4 +1,5 @@
 const db_url = process.env.DB_URL;
+const db_name = process.env.DB_NAME; 
 
 // console.log(process.env.DB_URL);
 // return
@@ -22,12 +23,6 @@ app.set("port", process.argv[2] || 3000);
 app.use(bodyParser.json());
 
 app.get('/',async(req, res, next)=>{
-
-    let db_name = db_a;
-
-    if( JSON.stringify(req.query).includes('2') ){
-        db_name = db_b;
-    }
 
     const db = getDb(db_name);
 
