@@ -39,7 +39,7 @@ app.get('/', async (req, res, next) => {
         "manufacturersName": "x"
     }
 
-    res.end(JSON.stringify(content));
+    res.json(content);
 });
 
 app.listen(app.get('port'), () => {
