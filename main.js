@@ -39,6 +39,8 @@ app.get('/', async (req, res, next) => {
         "manufacturersName": "x"
     }
 
+    console.log('req');
+
     res.json(content);
 });
 
