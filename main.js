@@ -42,7 +42,7 @@ app.get('/',async(req, res, next)=>{
 
     console.log('req');
 
-    res.json(JSON.stringify(content.docs));
+    res.json(content.docs);
 });
 
 app.listen(app.get('port'),()=>{
