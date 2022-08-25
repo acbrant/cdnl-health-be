@@ -11,7 +11,7 @@ const fs = require('fs');
 const express = require('express');
 const bodyParser = require('body-parser');
 
-function getDb(db_name){
+function getDb(db_name) {
     let db = nano.db.use(db_name);
     return db;
 }
@@ -21,28 +21,27 @@ app.set("port", process.argv[2] || 3000);
 
 app.use(bodyParser.json());
 
-app.get('/',async(req, res, next)=>{
+app.get('/', async (req, res, next) => {
 
-    let db_name = db_a;
-
-    if( JSON.stringify(req.query).includes('2') ){
-        db_name = db_b;
+    const content = {
+        "_id": "x",
+        "_rev": "x",
+        "productId": "x",
+        "productName": "x",
+        "dosageForm": "x",
+        "packageDescription": "x",
+        "packageSize": "x",
+        "packageSizeUnitOfMeasure": "x",
+        "metricStrength": "x",
+        "metricStrengthUnitOfMeasure": "x",
+        "genericProductIdentifier": "x",
+        "gpiGenericName": "x",
+        "manufacturersName": "x"
     }
 
-    const db = getDb(db_name);
-
-    // returns the first 25, unless noted to be different 
-    content = await db.find({
-        "selector": {
-           "_id": {
-              "$gt": null
-           }
-        }
-    });
-
-    res.end(JSON.stringify(content.docs));
+    res.end(JSON.stringify(content));
 });
 
-app.listen(app.get('port'),()=>{
-	console.log("listening on port "+app.get('port'));
+app.listen(app.get('port'), () => {
+    console.log("listening on port " + app.get('port'));
 });
