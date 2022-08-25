@@ -40,7 +40,9 @@ app.get('/',async(req, res, next)=>{
         }
     });
 
-    res.end(JSON.stringify(content.docs));
+    console.log('req');
+
+    res.json(JSON.stringify(content.docs));
 });
 
 app.listen(app.get('port'),()=>{
