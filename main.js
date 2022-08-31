@@ -22,7 +22,7 @@ app.set("port", process.argv[2] || 3000);
 
 app.use(bodyParser.json());
 
-app.get('/',async(req, res, next)=>{
+app.get(['/','/data'],async(req, res, next)=>{
 
     const db = getDb(db_name);
 
