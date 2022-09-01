@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const db_url = process.env.DB_URL;
 const db_name = process.env.DB_NAME; 
 
@@ -37,6 +39,21 @@ app.get(['/','/data'],async(req, res, next)=>{
 
     console.log('req');
 
+    res.json(content.docs);
+});
+
+app.get(['/search'], async (req, res, next) => {
+
+    const searchQuery = req.query.search
+
+    const db = getDb(db_name);
+    const content = await db.find({
+        "selector": {
+           "productName": {
+              "$regex": `.*(?i)${searchQuery}.*` // (?i) ==  case-insensitive
+           }
+        }
+    })
     res.json(content.docs);
 });
 
