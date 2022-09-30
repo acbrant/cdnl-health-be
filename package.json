@@ -7,10 +7,13 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "DB_URL='http://admin:password@127.0.0.1:5984/' node main.js"
   },
+  "homepage": "/fe",
   "author": "",
   "license": "ISC",
   "dependencies": {
     "express": "^4.18.1",
+    "express-graphql": "^0.12.0",
+    "graphql-type-json": "^0.3.2",
     "nano": "^10.0.0"
   }
 }
