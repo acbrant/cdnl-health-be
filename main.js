@@ -46,10 +46,26 @@ app.get(['/','/data'],async(req, res, next)=>{
 var schema = buildSchema(`
   scalar JSON
 
+  type Doc {
+      _id: String,
+      _rev: String,
+      productId: String,
+      productName: String,
+      dosageForm: String,
+      packageDescription: String,
+      packageSize: String,
+      packageSizeUnitOfMeasure: String,
+      metricStrength: String,
+      metricStrengthUnitOfMeasure: String,
+      genericProductIdentifier: String,
+      gpiGenericName: String,
+      manufacturersName: String
+  }
+
   type Query {
     hello: String,
     count: Int,
-    docs: JSON,    
+    all: [Doc],    
   }
 
 `);
@@ -70,7 +86,7 @@ var root = {
     return str_to_send.length
   },
 
-  docs: async()=>{
+  all: async()=>{
     return (await getData(getDb(db_name))).docs;
   }
 };
