@@ -76,17 +76,17 @@ var root = {
   JSON: GraphQLJSON, 
 
   hello: async(...a) => {    
-    const content = await getData(db);
-    console.log(`content is `);
-    // console.log(content);
-    return content;
+    console.log('hello graphql')
+    return "hello, there";
   },
 
   count:async() => {
-    return str_to_send.length
+    console.log('count graphql')
+    return 200
   },
 
   all: async()=>{
+    console.log('all graphql')
     return (await getData(getDb(db_name))).docs;
   }
 };
