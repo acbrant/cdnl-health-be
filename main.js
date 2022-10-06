@@ -26,6 +26,14 @@ const app = express();
 app.set("port", process.argv[2] || 3000);
 
 app.use(bodyParser.json());
+ 
+app.use('/*',(req,res,next)=>{
+  console.log({
+    body: req.body,
+    query: req.query
+  });
+  next();
+});
 
 app.get(['/','/data'],async(req, res, next)=>{
     
