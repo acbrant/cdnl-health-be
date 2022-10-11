@@ -105,6 +105,21 @@ app.use('/graphql', graphqlHTTP({
     graphiql: true,
 }));
 
+app.get(['/search'], async (req, res, next) => {
+
+    const searchQuery = req.query.search
+
+    const db = getDb(db_name);
+    const content = await db.find({
+        "selector": {
+           "productName": {
+              "$regex": `.*(?i)${searchQuery}.*` // (?i) ==  case-insensitive
+           }
+        }
+    })
+    res.json(content.docs);
+});
+
 app.listen(app.get('port'),()=>{
 	console.log("listening on port "+app.get('port'));
 });
