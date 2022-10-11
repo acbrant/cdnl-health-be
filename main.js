@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const db_url = process.env.DB_URL;
 const db_name = process.env.DB_NAME; 
 
@@ -54,7 +56,11 @@ app.get(['/','/data'],async(req, res, next)=>{
 var schema = buildSchema(`
   scalar JSON
 
-  type Doc {
+  type Query {
+    products: [Product]
+  }  
+
+  type Product {
       _id: String,
       _rev: String,
       productId: String,
@@ -70,10 +76,8 @@ var schema = buildSchema(`
       manufacturersName: String
   }
 
-  type Query {
-    hello: String,
-    count: Int,
-    all: [Doc],    
+  schema {
+    query: Query
   }
 
 `);
@@ -95,6 +99,13 @@ var root = {
 
   all: async()=>{
     console.log('all graphql')
+    console.log('db_name: ' + db_name)
+    return (await getData(getDb(db_name))).docs;
+  },
+
+  products: async()=>{
+    console.log('all graphql')
+    console.log('db_name: ' + db_name)
     return (await getData(getDb(db_name))).docs;
   }
 };
