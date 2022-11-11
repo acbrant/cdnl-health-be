@@ -4,10 +4,6 @@ const db_name = process.env.DB_NAME;
 // console.log(process.env.DB_URL);
 // return
 
-const db_a = 'db_a';
-const db_b = 'db_b';
-
-const nano = require('nano')(db_url);
 const fs = require('fs');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -15,40 +11,10 @@ const bodyParser = require('body-parser');
 var { graphqlHTTP } = require('express-graphql');
 var { buildSchema } = require('graphql');
 const { GraphQLJSON, GraphQLJSONObject } = require('graphql-type-json');
-const { json } = require('express/lib/response');
 
-function getDb(db_name){
-    let db = nano.db.use(db_name);
-    return db;
-}
+const mysql = require('mysql2/promise');
+const {HOST, USER, PASSWORD, DATABASE} = process.env;
 
-const app = express();
-app.set("port", process.argv[2] || 3000);
-
-app.use(bodyParser.json());
- 
-app.use('/*',(req,res,next)=>{
-  console.log({
-    body: req.body,
-    query: req.query
-  });
-  next();
-});
-
-app.get(['/','/data'],async(req, res, next)=>{
-    
-    console.log('req start');
-    
-    const db = getDb(db_name);
-    
-    console.log('req 2');
-
-    const content = await getData(db);
-
-    console.log('req');
-
-    res.json(content.docs);
-});
 
 // Construct a schema, using GraphQL schema language
 var schema = buildSchema(`
@@ -79,7 +45,6 @@ var schema = buildSchema(`
 `);
 
 // The root provides a resolver function for each API endpoint
-var str_to_send = 'Hello world!!!';
 var root = {
   JSON: GraphQLJSON, 
 
@@ -99,48 +64,90 @@ var root = {
   }
 };
 
-app.use('/graphql', graphqlHTTP({
-    schema: schema,
-    rootValue: root,
-    graphiql: true,
-}));
+async function main(){
 
-app.get(['/search'], async (req, res, next) => {
+  let singleStoreConnection;
+  try {
+    singleStoreConnection = await mysql.createConnection({
+      host: HOST,
+      user: USER,
+      password: PASSWORD,
+      database: DATABASE
+    });
 
-    const searchQuery = req.query.search
+    console.log("You have successfully connected to SingleStore.");
+  
+  } catch (err) {
+    // Good programmers always handle their errors :)
+    console.error('ERROR', err);
+    process.exit(1);
+  } 
 
-    const db = getDb(db_name);
-    const content = await db.find({
-        "selector": {
-           "productName": {
-              "$regex": `.*(?i)${searchQuery}.*` // (?i) ==  case-insensitive
-           }
-        }
-    })
-    res.json(content.docs);
-});
+  const app = express();
+  app.set("port", process.argv[2] || 3000);
 
-app.listen(app.get('port'),()=>{
-	console.log("listening on port "+app.get('port'));
-});
-
-async function getData(db){
-
-  // returns the first 25, unless noted to be different 
-  return await db.find({
-    "selector": {
-       "_id": {
-          "$gt": null
-       }
-    }
+  app.use(bodyParser.json());
+  
+  app.use('/*',(req,res,next)=>{
+    console.log({
+      body: req.body,
+      query: req.query
+    });
+    next();
   });
 
-}
+  app.get(['/','/data'],async(req, res, next)=>{
+      
+      const content = await readOne({conn:singleStoreConnection});
 
-// TODO remove
-function timeoutPromise(ms){
-  return new Promise((resolve, reject)=>{
-    setTimeout(resolve,ms);
-  }); 
-}
+      res.json(content);
+  });
 
+  app.use('/graphql', graphqlHTTP({
+      schema: schema,
+      rootValue: root,
+      graphiql: true,
+  }));
+
+  // TODO move this to SQL
+  app.get(['/search'], async (req, res, next) => {
+
+      const searchQuery = req.query.search
+
+      const db = getDb(db_name);
+      const content = await db.find({
+          "selector": {
+            "productName": {
+                "$regex": `.*(?i)${searchQuery}.*` // (?i) ==  case-insensitive
+            }
+          }
+      })
+      res.json(content.docs);
+  });
+
+  app.listen(app.get('port'),()=>{
+    console.log("listening on port "+app.get('port'));
+  });
+
+  async function readOne({ conn, id }) {
+    const [rows, fields] = await conn.execute(
+      'select * from cah_json;',
+    );
+    return rows[0];
+  };
+
+  process.on('exit',async ()=>{
+    console.log('closing db connection');
+    (async()=>{
+      await singleStoreConnection.end();
+    })();
+    console.log('db connection closed');
+  });
+  
+}
+main();
+
+async function getData(db){
+  // returns the first 25, unless noted to be different 
+  return await readOne({conn:singleStoreConnection});
+}
