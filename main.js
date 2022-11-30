@@ -44,27 +44,28 @@ var schema = buildSchema(`
 
 `);
 
-// The root provides a resolver function for each API endpoint
-var root = {
-  JSON: GraphQLJSON, 
-
-  hello: async(...a) => {    
-    console.log('hello graphql')
-    return "hello, there";
-  },
-
-  count:async() => {
-    console.log('count graphql')
-    return 200
-  },
-
-  all: async()=>{
-    console.log('all graphql')
-    return (await getData()).docs;
-  }
-};
 
 async function main(){
+
+  // The root provides a resolver function for each API endpoint
+  var root = {
+    JSON: GraphQLJSON, 
+  
+    hello: async(...a) => {    
+      console.log('hello graphql')
+      return "hello, there";
+    },
+  
+    count:async() => {
+      console.log('count graphql')
+      return 200
+    },
+  
+    all: async()=>{
+      console.log('all graphql')
+      return (await getData());
+    }
+  };
 
   let singleStoreConnection;
   try {
@@ -99,7 +100,7 @@ async function main(){
 
   app.get(['/','/data'],async(req, res, next)=>{
       
-      const content = await readOne({conn:singleStoreConnection});
+      const content = await readAll({conn:singleStoreConnection});
 
       res.json(content);
   });
@@ -119,13 +120,6 @@ async function main(){
     console.log("listening on port "+app.get('port'));
   });
 
-  async function readOne({ conn, id }) {
-    const [rows, fields] = await conn.execute(
-      `select * from ${TABLE};`,
-    );
-    return rows;
-  };
-
   process.on('exit',async ()=>{
     console.log('closing db connection');
     (async()=>{
@@ -133,11 +127,22 @@ async function main(){
     })();
     console.log('db connection closed');
   });
+
+  async function getData(){
+    // returns all, unless noted to be different 
+    return await readAll({conn:singleStoreConnection});
+  }
+
+  async function readAll({ conn, id }) {
+    const [rows, fields] = await conn.execute(
+      `select * from ${TABLE};`,
+    );
+    return rows;
+  };
+
+  async function readOne({ conn, id }) {
+    return readAll({ conn, id })[0];
+  };
   
 }
 main();
-
-async function getData(db){
-  // returns the first 25, unless noted to be different 
-  return await readOne({conn:singleStoreConnection});
-}
