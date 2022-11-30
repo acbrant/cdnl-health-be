@@ -123,7 +123,7 @@ async function main(){
     const [rows, fields] = await conn.execute(
       `select * from ${TABLE};`,
     );
-    return rows[0];
+    return rows;
   };
 
   process.on('exit',async ()=>{
