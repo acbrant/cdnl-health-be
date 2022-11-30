@@ -13,7 +13,7 @@ var { buildSchema } = require('graphql');
 const { GraphQLJSON, GraphQLJSONObject } = require('graphql-type-json');
 
 const mysql = require('mysql2/promise');
-const {HOST, USER, PASSWORD, DATABASE} = process.env;
+const {HOST, USER, PASSWORD, DATABASE, TABLE} = process.env;
 
 
 // Construct a schema, using GraphQL schema language
@@ -60,7 +60,7 @@ var root = {
 
   all: async()=>{
     console.log('all graphql')
-    return (await getData(getDb(db_name))).docs;
+    return (await getData()).docs;
   }
 };
 
@@ -79,6 +79,7 @@ async function main(){
   
   } catch (err) {
     // Good programmers always handle their errors :)
+    console.error('Error connecting to single store');
     console.error('ERROR', err);
     process.exit(1);
   } 
@@ -111,18 +112,7 @@ async function main(){
 
   // TODO move this to SQL
   app.get(['/search'], async (req, res, next) => {
-
-      const searchQuery = req.query.search
-
-      const db = getDb(db_name);
-      const content = await db.find({
-          "selector": {
-            "productName": {
-                "$regex": `.*(?i)${searchQuery}.*` // (?i) ==  case-insensitive
-            }
-          }
-      })
-      res.json(content.docs);
+    req.sendStatus(410);
   });
 
   app.listen(app.get('port'),()=>{
@@ -131,7 +121,7 @@ async function main(){
 
   async function readOne({ conn, id }) {
     const [rows, fields] = await conn.execute(
-      'select * from cah_json;',
+      `select * from ${TABLE};`,
     );
     return rows[0];
   };
